@@ -1,12 +1,32 @@
 package com.healthplan.properties;
 
 import com.healthplan.properties.model.Properties;
+import com.healthplan.properties.repository.PropertiesRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@ContextConfiguration(classes = HealthplanPropertiesApplication.class)
+@ActiveProfiles("test")
+@Transactional
 public class PropertiesTest {
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @Autowired
+    private PropertiesRepository propertiesRepository;
 
     private Properties properties;
 
@@ -34,11 +54,14 @@ public class PropertiesTest {
         assertEquals("NO INCLUYE", properties.getOrthodontics());
         assertEquals(1240, properties.getMedicalGuide());
         assertEquals(150.3, properties.getRefund());
+
+        propertiesRepository.save(properties);
+
+        Long id = properties.getProperId();
+        assertNotNull(id);
+
+        Properties retrievedProperties = entityManager.find(Properties.class, id);
+        assertNotNull(retrievedProperties);
     }
 
-    @Test
-    void testPropertiesId() {
-
-        assertNotNull(properties.getProperId());
-    }
 }
